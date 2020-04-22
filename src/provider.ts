@@ -1,56 +1,13 @@
-import EventEmitter from 'eventemitter3';
+import BasicProvider from 'basic-provider';
 
-import { IRpcConnection, ThreeIdAuthOptions } from './interfaces';
-import { payloadId } from './utils';
+import { ThreeIdAuthOptions } from './interfaces';
 
-class ThreeIdProvider extends EventEmitter {
-  private _connected = false;
-  private connection: IRpcConnection;
-
-  constructor(connection: IRpcConnection) {
-    super();
-    this.connection = connection;
-  }
-
+class ThreeIdProvider extends BasicProvider {
   get is3idProvider(): boolean {
     return true;
   }
 
-  set connected(value: boolean) {
-    this._connected = value;
-    if (value === true) {
-      this.emit('connect');
-    } else {
-      this.emit('close');
-    }
-  }
-
-  get connected(): boolean {
-    return this._connected;
-  }
-
-  public open(): void {
-    new Promise((resolve, reject) => {
-      this.connection.on('close', () => {
-        this.connected = false;
-        reject();
-      });
-
-      this.connection.on('connect', () => {
-        this.connected = true;
-        resolve();
-      });
-
-      this.connection.open();
-    });
-  }
-
-  public close(): void {
-    this.connected = false;
-    this.connection.close();
-  }
-
-  public async enable(authOpts: ThreeIdAuthOptions): Promise<string> {
+  public async enable(authOpts: ThreeIdAuthOptions): Promise<any> {
     try {
       if (!this.connected) {
         await this.open();
@@ -59,19 +16,9 @@ class ThreeIdProvider extends EventEmitter {
       this.emit('enable');
       return result;
     } catch (err) {
-      this.connected = false;
-      this.connection.close();
+      await this.close();
       throw err;
     }
-  }
-
-  public async send(method: string, params: any = {}): Promise<any> {
-    return this.connection.send({
-      id: payloadId(),
-      jsonrpc: '2.0',
-      method,
-      params,
-    });
   }
 }
 
