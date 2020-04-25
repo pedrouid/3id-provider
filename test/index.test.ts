@@ -1,5 +1,11 @@
+import ThreeIdProvider from '../src';
+
+import { getMockConnection } from './shared';
+
 describe('3id-provider', () => {
-  it('needs tests', async () => {
-    // needs tests
+  it('should instantiate sucessfully', async () => {
+    const connection = getMockConnection();
+    const provider = new ThreeIdProvider(connection);
+    expect(provider).toBeTruthy();
   });
 });
