@@ -1,22 +1,24 @@
-import BasicProvider from 'basic-provider';
+import JsonRpcProvider from '@json-rpc-tools/provider';
+import { formatJsonRpcRequest } from '@json-rpc-tools/utils';
 
 import { ThreeIdAuthOptions } from './interfaces';
 
-class ThreeIdProvider extends BasicProvider {
+class ThreeIdProvider extends JsonRpcProvider {
   get is3idProvider(): boolean {
     return true;
   }
 
   public async enable(authOpts: ThreeIdAuthOptions): Promise<any> {
     try {
-      if (!this.connected) {
-        await this.open();
+      if (!this.connection.connected) {
+        await this.connect();
       }
-      const result = await this.send('3id_authenticate', authOpts);
-      this.emit('enable');
+      const request = formatJsonRpcRequest('3id_authenticate', authOpts);
+      const result = await this.request(request);
+      this.events.emit('enable');
       return result;
     } catch (err) {
-      await this.close();
+      await this.disconnect();
       throw err;
     }
   }

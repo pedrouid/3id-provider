@@ -1,16 +1,29 @@
 import { EventEmitter } from 'events';
-
-import { IRpcConnection } from '../../src';
+import { IJsonRpcConnection } from '@json-rpc-tools/utils';
 
 export class MockIdentityWallet {
   dispatch(payload: any) {}
 }
 
-export class MockRpcConnection extends EventEmitter implements IRpcConnection {
+export class MockRpcConnection extends IJsonRpcConnection {
+  public events = new EventEmitter();
+
   public connected: boolean = false;
 
   constructor(private readonly identityWallet: MockIdentityWallet) {
     super();
+  }
+
+  public on(event: string, listener: any): void {
+    this.events.on(event, listener);
+  }
+
+  public once(event: string, listener: any): void {
+    this.events.once(event, listener);
+  }
+
+  public off(event: string, listener: any): void {
+    this.events.off(event, listener);
   }
 
   public async open(): Promise<void> {
